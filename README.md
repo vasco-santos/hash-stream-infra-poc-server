@@ -1,10 +1,10 @@
 # hash-stream-infra-poc-server
 
-[Hash Stream](https://github.com/vasco-santos/hash-stream) infra deployment PoC for [hash-stream] built on a Node.js HTTP server with [Hono](https://hono.dev/).
+Infra deployment PoC for [hash-stream] Server implementing the [IPFS Trustless Gateway](https://specs.ipfs.tech/http-gateways/trustless-gateway/) built on a Node.js HTTP server with [Hono](https://hono.dev/).
 
 ## Getting Started
 
-This repo contains a lightweight HTTP server that can be deployed to run an IPFS Trustless Gateway relying on [hash-stream].
+This repo contains a lightweight HTTP server that can be deployed to run an [IPFS Trustless Gateway](https://specs.ipfs.tech/http-gateways/trustless-gateway/) relying on [hash-stream].
 
 This repo setup relies on the following Index and Pack stores in the file system:
 
@@ -66,13 +66,54 @@ npm run dev -- --port=4000 --store-path=/mnt/streamer-store
 
 ---
 
-### Server Setup
+## Server Setup
 
-The server exposes the following endpoint:
+The server exposes the following endpoint following the [IPFS Trustless Gateway Spec](https://specs.ipfs.tech/http-gateways/trustless-gateway/):
 
-- `GET /ipfs/:cid` – Serves verifiable content associated with a multihash using the [hash-stream] building blocks under the hood.
+- `GET /ipfs/:cid` – Serves verifiable content associated with a multihash using the [hash-stream] building Blobs under the hood.
 
 The configured store path MUST contains valid `pack` and `index` data for it to respond to requests correctly.
+
+### ⚙️ Query Parameters & Headers
+
+The request **must specify the desired response format** using one of:
+
+#### ✅ Accept Header (preferred)
+
+```http
+Accept: application/vnd.ipld.raw
+Accept: application/vnd.ipld.car
+```
+
+#### ✅ `format` Query Parameter (optional alternative)
+
+```http
+/ipfs/:cid?format=raw
+/ipfs/:cid?format=car
+```
+
+Supported formats:
+
+| Format | Description                             |
+| ------ | --------------------------------------- |
+| `raw`  | Outputs the raw block bytes             |
+| `car`  | Outputs a CAR file containing the block |
+
+> Note: For compatibility, requests **without a valid format header or query param will be rejected or return an empty response**.
+
+---
+
+### 🚀 Example Request
+
+```bash
+curl -i -H "Accept: application/vnd.ipld.raw" http://localhost:3000/ipfs/bafkqaaa
+```
+
+or
+
+```bash
+curl -i "http://localhost:3000/ipfs/bafkqaaa?format=raw"
+```
 
 ---
 
