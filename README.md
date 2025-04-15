@@ -95,17 +95,32 @@ Containerize the server for portability and infra integration.
 Dockerfile example:
 
 ```dockerfile
-FROM node:20-slim
+# Use Node.js base image
+FROM node:20-alpine
+
+# Create app directory
 WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy the rest of your code
 COPY . .
-RUN npm ci --only=production
-CMD ["node", "server.js", "--port=3000"]
+
+# Expose the server port (adjust if needed)
+EXPOSE 3000
+
+# Start the app (adjust this to your actual start script if changed)
+CMD ["node", "src/index.js"]
 ```
 
 ```sh
 docker build -t hash-stream-server .
-docker run -d --restart=always -p 3000:3000 hash-stream-server
+docker run -d --restart=always -p 8787:3000 hash-stream-server
 ```
+
+A Docker image for this repository is available at https://hub.docker.com/r/vascosantos10/hash-stream-server
 
 ### Systemd
 
