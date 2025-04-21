@@ -23,10 +23,10 @@
     "stop": "pm2 stop hash-stream-server"
   },
   "dependencies": {
-    "@hash-stream/index": "^1.2.0",
-    "@hash-stream/pack": "^1.2.0",
+    "@hash-stream/index": "^1.3.1",
+    "@hash-stream/pack": "^1.3.2",
     "@hash-stream/streamer": "^1.1.0",
-    "@hash-stream/utils": "^1.3.0",
+    "@hash-stream/utils": "^2.0.0",
     "@hono/node-server": "^1.14.1",
     "hono": "^4.7.6",
     "typescript": "^5.8.2"
