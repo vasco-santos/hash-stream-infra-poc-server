@@ -17,7 +17,7 @@ const app = new Hono()
 
 app.get('/ipfs/:cid', async (c) => {
   const hashStreamer = getHashStreamer(hashStreamPath)
-  return http.httpipfsGet(c.req.raw, { hashStreamer })
+  return http.ipfsGet(c.req.raw, { hashStreamer })
 })
 
 serve(
