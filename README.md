@@ -117,6 +117,38 @@ curl -i "http://localhost:3000/ipfs/bafkqaaa?format=raw"
 
 ---
 
+## Fetch and verify content
+
+This Server exposes an HTTP route `/ipfs` as a [Trustless Gateway](https://specs.ipfs.tech/http-gateways/trustless-gateway/), only resolving content that can be verified on the client. While a user has the responsability to verify and decode the content on the client side, there are some clients available that can be used, such as [@helia/verified-fetch](https://github.com/ipfs/helia-verified-fetch/tree/main/packages/verified-fetch).
+
+Here follows an example using `@helia/verified-fetch` to fetch some content:
+
+```js
+import fs from 'fs'
+
+import { createVerifiedFetch } from '@helia/verified-fetch'
+import { CID } from 'multiformats/cid'
+
+const cidString = 'bafybeiaxbrtsdhi4n2qv53wskm7s6dcr3wpxy7kqdcjp2tx2dafxeiqu2m'
+const cid = CID.parse(cidString)
+
+// Example server URL deployed
+const serverUrl = 'https://my-hash-stream-server.dev'
+const verifiedFetch = await createVerifiedFetch({
+  gateways: [serverUrl],
+})
+const response = await verifiedFetch(`ipfs://${cid}/`)
+const body = await response.arrayBuffer()
+const bodyBytes = new Uint8Array(body)
+
+// Write fetched file to disk
+await fs.promises.writeFile(`./${cid.toString()}`, Buffer.from(bodyBytes))
+
+await verifiedFetch.stop()
+```
+
+---
+
 ## Deployment
 
 For running a production-grade Node.js server, you can rely on tools such as:
