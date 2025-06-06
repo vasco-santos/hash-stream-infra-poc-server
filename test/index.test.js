@@ -19,7 +19,9 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { code as RawCode } from 'multiformats/codecs/raw'
 import { recursive as exporter } from 'ipfs-unixfs-exporter'
-import { createVerifiedFetch } from '@helia/verified-fetch'
+import { createVerifiedFetch } from '@vascosantos/verified-fetch'
+import { trustlessGateway } from '@vascosantos/block-brokers'
+ import { createHeliaHTTP } from '@helia/http'
 
 import { createApp } from '../src/index.js'
 import { randomBytes } from './helpers/random.js'
@@ -31,7 +33,7 @@ describe('HashStream server with client', () => {
   /** @type {import('hono').Hono} */
   let app
   let server
-  let baseUrl
+  let providerUrl
   let hashStreamPath
   let verifiedFetch
   /** @type {PackWriter} */
@@ -61,12 +63,17 @@ describe('HashStream server with client', () => {
 
     // @ts-expect-error types do not match
     const port = server.address().port
-    baseUrl = `http://127.0.0.1:${port}`
+    providerUrl = `/ip4/127.0.0.1/tcp/${port}/http`
 
-    verifiedFetch = await createVerifiedFetch({
-      gateways: [baseUrl],
-      allowLocal: true,
-    })
+    verifiedFetch = await createVerifiedFetch(
+        await createHeliaHTTP({
+          blockBrokers: [
+            trustlessGateway({
+              allowLocal: true
+            })
+          ],
+        }),
+      )
 
     // Create a pack writer
     const indexStore = new FSIndexStore(`${hashStreamPath}/index`)
@@ -203,7 +210,11 @@ describe('HashStream server with client', () => {
 
     // Fetch the content using verified fetch
     const verifiedFetchResponse = await verifiedFetch(
-      `ipfs://${containingCid}/`
+      `ipfs://${containingCid}/?provider=${providerUrl}`,
+      {
+        allowProviderParameter: true,
+        allowLocal: true,
+      }
     )
     assert(verifiedFetchResponse.status === 200)
     const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
@@ -267,7 +278,11 @@ describe('HashStream server with client', () => {
 
     // Fetch the content using verified fetch
     const verifiedFetchResponse = await verifiedFetch(
-      `ipfs://${containingCid}/`
+      `ipfs://${containingCid}/?provider=${providerUrl}`,
+      {
+        allowProviderParameter: true,
+        allowLocal: true,
+      }
     )
     assert(verifiedFetchResponse.status === 200)
     const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
@@ -323,7 +338,10 @@ describe('HashStream server with client', () => {
       assert(equals(blobMultihash.bytes, blobMultihashFromBytes.bytes))
 
       // Fetch the content using verified fetch
-      const verifiedFetchResponse = await verifiedFetch(`ipfs://${blobCid}/`)
+      const verifiedFetchResponse = await verifiedFetch(`ipfs://${blobCid}/?provider=${providerUrl}`, {
+        allowProviderParameter: true,
+        allowLocal: true,
+      })
       assert(verifiedFetchResponse.status === 200)
       const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
       const verifiedFetchbodyBytes = new Uint8Array(verifiedFetchBody)
