@@ -19,9 +19,7 @@ import { CID } from 'multiformats/cid'
 import { sha256 } from 'multiformats/hashes/sha2'
 import { code as RawCode } from 'multiformats/codecs/raw'
 import { recursive as exporter } from 'ipfs-unixfs-exporter'
-import { createVerifiedFetch } from '@vascosantos/verified-fetch'
-import { trustlessGateway } from '@vascosantos/block-brokers'
- import { createHeliaHTTP } from '@helia/http'
+import { createVerifiedFetch } from '@helia/verified-fetch'
 
 import { createApp } from '../src/index.js'
 import { randomBytes } from './helpers/random.js'
@@ -34,6 +32,7 @@ describe('HashStream server with client', () => {
   let app
   let server
   let providerUrl
+  let baseUrl
   let hashStreamPath
   let verifiedFetch
   /** @type {PackWriter} */
@@ -64,16 +63,12 @@ describe('HashStream server with client', () => {
     // @ts-expect-error types do not match
     const port = server.address().port
     providerUrl = `/ip4/127.0.0.1/tcp/${port}/http`
+    baseUrl = `http://127.0.0.1:${port}`
 
-    verifiedFetch = await createVerifiedFetch(
-        await createHeliaHTTP({
-          blockBrokers: [
-            trustlessGateway({
-              allowLocal: true
-            })
-          ],
-        }),
-      )
+    verifiedFetch = await createVerifiedFetch({
+      gateways: [baseUrl],
+      allowLocal: true,
+    })
 
     // Create a pack writer
     const indexStore = new FSIndexStore(`${hashStreamPath}/index`)
