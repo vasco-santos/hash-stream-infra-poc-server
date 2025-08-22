@@ -31,6 +31,7 @@ describe('HashStream server with client', () => {
   /** @type {import('hono').Hono} */
   let app
   let server
+  let providerUrl
   let baseUrl
   let hashStreamPath
   let verifiedFetch
@@ -61,6 +62,7 @@ describe('HashStream server with client', () => {
 
     // @ts-expect-error types do not match
     const port = server.address().port
+    providerUrl = `/ip4/127.0.0.1/tcp/${port}/http`
     baseUrl = `http://127.0.0.1:${port}`
 
     verifiedFetch = await createVerifiedFetch({
@@ -203,7 +205,11 @@ describe('HashStream server with client', () => {
 
     // Fetch the content using verified fetch
     const verifiedFetchResponse = await verifiedFetch(
-      `ipfs://${containingCid}/`
+      `ipfs://${containingCid}/?provider=${providerUrl}`,
+      {
+        allowProviderParameter: true,
+        allowLocal: true,
+      }
     )
     assert(verifiedFetchResponse.status === 200)
     const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
@@ -267,7 +273,11 @@ describe('HashStream server with client', () => {
 
     // Fetch the content using verified fetch
     const verifiedFetchResponse = await verifiedFetch(
-      `ipfs://${containingCid}/`
+      `ipfs://${containingCid}/?provider=${providerUrl}`,
+      {
+        allowProviderParameter: true,
+        allowLocal: true,
+      }
     )
     assert(verifiedFetchResponse.status === 200)
     const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
@@ -323,7 +333,10 @@ describe('HashStream server with client', () => {
       assert(equals(blobMultihash.bytes, blobMultihashFromBytes.bytes))
 
       // Fetch the content using verified fetch
-      const verifiedFetchResponse = await verifiedFetch(`ipfs://${blobCid}/`)
+      const verifiedFetchResponse = await verifiedFetch(`ipfs://${blobCid}/?provider=${providerUrl}`, {
+        allowProviderParameter: true,
+        allowLocal: true,
+      })
       assert(verifiedFetchResponse.status === 200)
       const verifiedFetchBody = await verifiedFetchResponse.arrayBuffer()
       const verifiedFetchbodyBytes = new Uint8Array(verifiedFetchBody)

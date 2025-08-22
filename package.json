@@ -33,7 +33,7 @@
     "typescript": "^5.8.2"
   },
   "devDependencies": {
-    "@helia/verified-fetch": "^2.6.5",
+    "@helia/verified-fetch": "^3.2.0",
     "@ipld/car": "^5.4.0",
     "@storacha/one-webcrypto": "^1.0.1",
     "@types/assert": "^1.5.11",
